@@ -1,0 +1,12 @@
+  #NEEDED TO INSTALL THE PACKAGES
+  
+  - name: Setup CRB repo
+    shell: "subscription-manager config --rhsm.manage_repos=1 && subscription-manager repos --enable codeready-builder-for-rhel-9-x86_64-rpms"
+  - name: EPEL Key
+    rpm_key:
+      state: present
+      key: "https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-9"
+  - name: Add EPEL release
+    ansible.builtin.dnf:
+      name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm"
+      state: present

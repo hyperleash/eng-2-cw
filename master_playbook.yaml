@@ -1,0 +1,5 @@
+- name: prepare disk on cluster nodes
+  hosts: cluster:client
+  tasks:
+    - name: prepare disk on cluster nodes
+      include_tasks: ansible_tasks/mount_disk.yaml

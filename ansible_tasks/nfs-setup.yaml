@@ -1,0 +1,26 @@
+- name: NFS Configuration
+  hosts: cluster:client
+  become: true
+  become_user: root
+  tasks:
+  - name: Update packages
+    ansible.builtin.dnf:
+      name: "*"
+      state: latest
+  - name: NFS tools
+    ansible.builtin.dnf:
+      name: "nfs-utils"
+      state: latest
+  - name: NFS mountpoint
+    ansible.builtin.file:
+      path: /shared
+      state: directory
+      
+  - name: NFS fstab
+    ansible.posix.mount:
+      boot: true
+      state: mounted
+      fstype: nfs
+      src: 10.0.6.234:/shared
+      path: /shared
+      opts: defaults,_netdev

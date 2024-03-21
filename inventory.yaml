@@ -1,0 +1,40 @@
+cluster:
+  hosts:
+    18.171.158.236:
+    3.10.56.53:
+    35.178.129.151:
+    18.130.186.34:
+  vars:
+    ansible_ssh_private_key_file: ~/.ssh/comp0239_key
+
+host:
+  hosts:
+    13.40.99.98:
+  vars:
+    ansible_ssh_private_key_file: ~/.ssh/comp0239_key
+
+client:
+  hosts:
+    13.43.218.245:
+  vars:
+    ansible_ssh_private_key_file: ~/.ssh/comp0239_key
+
+
+coursemachines:
+  hosts:
+    3.10.56.53:
+    35.178.129.151:
+    18.130.186.34:
+    13.40.99.98:
+    13.43.218.245:
+    18.171.158.236:
+  vars:
+    ansible_ssh_private_key_file: ~/.ssh/comp0239_key
+
+
+
+#/shared 10.0.15.70(rw,sync,no_all_squash,no_root_squash)
+#/shared 10.0.6.161(rw,sync,no_all_squash,no_root_squash)
+#/shared 10.0.11.231(rw,sync,no_all_squash,no_root_squash)
+#/shared 10.0.5.208(rw,sync,no_all_squash,no_root_squash)
+#/shared 10.0.8.85(rw,sync,no_all_squash,no_root_squash)
