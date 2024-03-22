@@ -13,14 +13,13 @@
       state: latest
   - name: NFS mountpoint
     ansible.builtin.file:
-      path: /shared
+      path: /data/shared
       state: directory
-      
   - name: NFS fstab
     ansible.posix.mount:
       boot: true
       state: mounted
       fstype: nfs
       src: 10.0.6.234:/shared
-      path: /shared
+      path: /data/shared
       opts: defaults,_netdev

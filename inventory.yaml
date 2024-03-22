@@ -1,7 +1,7 @@
 cluster:
   hosts:
     18.171.158.236:
-    3.10.56.53:
+    35.178.169.219:
     35.178.129.151:
     18.130.186.34:
   vars:
@@ -33,8 +33,9 @@ coursemachines:
 
 
 
-#/shared 10.0.15.70(rw,sync,no_all_squash,no_root_squash)
+
 #/shared 10.0.6.161(rw,sync,no_all_squash,no_root_squash)
 #/shared 10.0.11.231(rw,sync,no_all_squash,no_root_squash)
-#/shared 10.0.5.208(rw,sync,no_all_squash,no_root_squash)
 #/shared 10.0.8.85(rw,sync,no_all_squash,no_root_squash)
+#/shared 10.0.15.70(rw,sync,no_all_squash,no_root_squash)
+#10-0-5-194
