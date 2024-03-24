@@ -1,0 +1,14 @@
+- name: Check if SSH key already exists
+  stat:
+    path: "~/.ssh/ansible_identity"
+  register: ssh_key
+
+- name: Generate SSH key
+  command: ssh-keygen -t rsa -b 4096 -N "" -f "~/.ssh/ansible_identity"
+  when: not ssh_key.stat.exists
+
+- name: Add public key to authorized keys
+  authorized_key:
+    user: "ec2-user"
+    key: "{{ lookup('file', '~/.ssh/ansible_identity.pub') }}"
+    state: present

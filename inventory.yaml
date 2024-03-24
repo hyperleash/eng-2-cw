@@ -5,20 +5,19 @@ cluster:
     35.178.129.151:
     18.130.186.34:
   vars:
-    ansible_ssh_private_key_file: ~/.ssh/comp0239_key
+    ansible_ssh_private_key_file: ~/.ssh/ansible_identity
 
 host:
   hosts:
     13.40.99.98:
   vars:
-    ansible_ssh_private_key_file: ~/.ssh/comp0239_key
+    ansible_ssh_private_key_file: ~/.ssh/ansible_identity
 
 client:
   hosts:
     13.43.218.245:
   vars:
-    ansible_ssh_private_key_file: ~/.ssh/comp0239_key
-
+    ansible_ssh_private_key_file: ~/.ssh/ansible_identity
 
 coursemachines:
   hosts:
@@ -29,7 +28,7 @@ coursemachines:
     13.43.218.245:
     18.171.158.236:
   vars:
-    ansible_ssh_private_key_file: ~/.ssh/comp0239_key
+    ansible_ssh_private_key_file: ~/.ssh/ansible_identity
 
 
 

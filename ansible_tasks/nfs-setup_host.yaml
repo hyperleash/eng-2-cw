@@ -1,0 +1,62 @@
+- name: Gather network interface facts
+  setup:
+    gather_subset: network
+
+- name: Create /etc/exports on Ansible Host
+  become: true
+  delegate_to: localhost 
+  lineinfile:
+    path: /etc/exports
+    line: "/home/ec2-user/data/shared {{ ansible_eth0.ipv4.address }}(rw,sync,no_all_squash,no_root_squash)"
+    create: yes
+
+- name: Re-export NFS shares
+  become: true
+  delegate_to: localhost
+  command: exportfs -a
+
+- name: Start and enable NFS server
+  become: true
+  delegate_to: localhost
+  service:
+    name: nfs-server
+    state: started
+    enabled: yes
+
+
+  # - name: Check if export line exists
+  #   stat:
+  #     path: /etc/exports
+  #   register: export_file
+  # - name: Add content to /etc/exports
+  #   ansible.builtin.lineinfile:
+  #     path: /etc/exports
+  #     line: "{{ item }}" 
+  #     create: yes 
+  #   loop:
+  #     - "/data/shared 10.0.15.70(rw,sync,no_all_squash,no_root_squash)"
+  #     - "/data/shared 10.0.6.161(rw,sync,no_all_squash,no_root_squash)"
+  #     - "/data/shared 10.0.11.231(rw,sync,no_all_squash,no_root_squash)"
+  #     - "/data/shared 10.0.5.194(rw,sync,no_all_squash,no_root_squash)"
+  #     - "/data/shared 10.0.8.85(rw,sync,no_all_squash,no_root_squash)"
+  #   when: not exports_file.stat.exists
+  # - name: Update packages
+  #   ansible.builtin.dnf:
+  #     name: "*"
+  #     state: latest
+  # - name: NFS tools
+  #   ansible.builtin.dnf:
+  #     name: "nfs-utils"
+  #     state: latest
+  # - name: NFS mountpoint
+  #   ansible.builtin.file:
+  #     path: /shared
+  #     state: directory
+  # - name: NFS fstab
+  #   ansible.posix.mount:
+  #     boot: true
+  #     state: mounted
+  #     fstype: nfs
+  #     src: 10.0.6.234:/shared
+  #     path: /data/shared
+  #     opts: defaults,_netdev

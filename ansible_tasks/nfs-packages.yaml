@@ -1,0 +1,29 @@
+- name: Update packages
+  become: true
+  become_user: root
+  ansible.builtin.dnf:
+    name: "*"
+    state: latest
+- name: NFS tools
+  become: true
+  become_user: root
+  ansible.builtin.dnf:
+    name: "nfs-utils"
+    state: latest
+- name: NFS mountpoint
+  become: true
+  become_user: root
+  ansible.builtin.file:
+    path: /home/ec2-user/data/shared
+    state: directory
+    recurse: yes
+- name: Change ownership of directories to ec2-user
+  become: true
+  become_user: root
+  file:
+    path: /home/ec2-user/data/
+    state: directory
+    recurse: yes  
+    owner: ec2-user
+    group: ec2-user
+
