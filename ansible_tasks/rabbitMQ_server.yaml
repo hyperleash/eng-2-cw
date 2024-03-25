@@ -1,0 +1,82 @@
+- name: Import RabbitMQ Release Signing Key
+  get_url:
+    url: https://github.com/rabbitmq/signing-keys/releases/download/3.0/rabbitmq-release-signing-key.asc
+    dest: /tmp/rabbitmq-release-signing-key.asc
+  register: signing_key_result
+
+- name: Install RabbitMQ Release Signing Key
+  command: rpm --import /tmp/rabbitmq-release-signing-key.asc
+  when: signing_key_result.changed
+
+- name: Import Cloudsmith Erlang Repository Key
+  get_url:
+    url: https://github.com/rabbitmq/signing-keys/releases/download/3.0/cloudsmith.rabbitmq-erlang.E495BB49CC4BBE5B.key
+    dest: /tmp/cloudsmith-erlang.key
+  register: erlang_key_result
+
+- name: Install Cloudsmith Erlang Repository Key
+  command: rpm --import /tmp/cloudsmith-erlang.key
+  when: erlang_key_result.changed
+
+- name: Import RabbitMQ Server Key
+  get_url:
+    url: https://github.com/rabbitmq/signing-keys/releases/download/3.0/cloudsmith.rabbitmq-erlang.E495BB49CC4BBE5B.key
+    dest: /tmp/rabbitmq_server.key
+  register: rabbitmq_key_result
+
+- name: Install Cloudsmith Erlang Repository Key
+  command: rpm --import /tmp/rabbitmq_server.key
+  when: rabbitmq_key_result.changed
+
+- name: Copy RabbitMQ repo file
+  copy:
+    src: ./rabbitmq.repo  
+    dest: /etc/yum.repos.d/rabbitmq.repo
+    owner: root
+    group: root
+    mode: '0644'  
+
+- name: Install socat and logrotate using DNF
+  package:
+    name:  
+      - socat
+      - logrotate
+    state: present
+
+- name: Install erlang and rabbitmq-server
+  package:
+    name:  
+      - erlang
+      - rabbitmq-server
+    state: present
+
+- name: Enable RabbitMQ Server service
+  service:
+    name: rabbitmq-server
+    enabled: yes 
+    state: started
+
+- name: Create RabbitMQ configuration file 
+  file:
+    path: /etc/rabbitmq/rabbitmq.conf
+    state: touch 
+
+- name: Configure RabbitMQ
+  lineinfile:
+    path: /etc/rabbitmq/rabbitmq.conf
+    line: 'listeners.tcp.default = 5673'
+  notify: restart rabbitmq
+
+- name: Enable RabbitMQ Management Plugin
+  command: rabbitmq-plugins enable rabbitmq_management
+
+- name: Get list of RabbitMQ users
+  command: rabbitmqctl list_users
+  register: rabbitmq_users
+
+- name: Create RabbitMQ admin user
+  command: rabbitmqctl add_user admin abc123
+  when: "'admin' not in rabbitmq_users.stdout" 
+  
+- name: Set RabbitMQ admin user tags 
+  command: rabbitmqctl set_user_tags admin administrator

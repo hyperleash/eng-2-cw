@@ -44,10 +44,17 @@
         path: /home/ec2-user/data/shared
         opts: defaults,_netdev
       
-      
-    
-    
-  
-    # - name: prepare disk on cluster nodes
-    #   include_tasks: ansible_tasks/mount_disk.yaml
 
+- name: Install RabbitMQ
+  hosts: client
+  become: true
+  become_user: root
+  tasks:
+    - name: Install RabbitMQ
+      include_tasks: ansible_tasks/rabbitMQ_server.yaml
+    
+  handlers:
+    - name: restart rabbitmq
+      service:
+        name: rabbitmq-server
+        state: restarted
