@@ -1,60 +1,87 @@
-- name: generate a key
-  hosts: host
-  tasks:
-    - name: generate a key
-      include_tasks: ansible_tasks/generate_keys.yaml
+# - name: generate a key
+#   hosts: host
+#   tasks:
+#     - name: generate a key
+#       include_tasks: ansible_tasks/generate_keys.yaml
   
-- name: prepare disk on cluster nodes
-  hosts: cluster:client
-  tasks:
-    - name: distributr keys
-      include_tasks: ansible_tasks/distribute_keys.yaml
+# - name: distribute keys
+#   hosts: cluster:client
+#   tasks:
+#     - name: distribute keys
+#       include_tasks: ansible_tasks/distribute_keys.yaml
 
-- name: Install EPEL
-  hosts: cluster:client:host
-  become: true
-  become_user: root
-  tasks:
-    - name: distributr keys
-      include_tasks: ansible_tasks/install_epel.yaml
+# - name: prepare disk
+#   hosts: cluster:client
+#   tasks:
+#     - name: mount disk
+#       include_tasks: ansible_tasks/mount_disk.yaml
 
-- name: Gather and Use Cluster IPs
-  hosts: cluster:client 
-  tasks:
-    - name: Create /etc/exports on Ansible Host
-      include_tasks: ansible_tasks/nfs-setup_host.yaml
+# - name: Install EPEL
+#   hosts: cluster:client:host
+#   become: true
+#   become_user: root
+#   tasks:
+#     - name: distributr keys
+#       include_tasks: ansible_tasks/install_epel.yaml
 
-- name: Install and prepare NFS
-  hosts: cluster:client:host  
-  tasks:
-    - name: Install and prepare NFS
-      include_tasks: ansible_tasks/nfs-packages.yaml
+# - name: Gather and Use Cluster IPs
+#   hosts: cluster:host 
+#   tasks:
+#     - name: Create /etc/exports on Ansible Host
+#       include_tasks: ansible_tasks/nfs-setup_host.yaml
 
-- name: NFS fstab
-  hosts: cluster:client
-  become: true
-  become_user: root
-  tasks:
-    - name: NFS fstab
-      ansible.posix.mount:
-        boot: true
-        state: mounted
-        fstype: nfs
-        src: 10.0.6.234:/home/ec2-user/data/shared
-        path: /home/ec2-user/data/shared
-        opts: defaults,_netdev
+# - name: Install and prepare NFS
+#   hosts: cluster:client:host  
+#   tasks:
+#     - name: Install and prepare NFS
+#       include_tasks: ansible_tasks/nfs-packages.yaml
+
+# - name: Gather and Use Cluster IPs
+#   hosts: client
+#   tasks:
+#     - name: Start and enable NFS server
+#       include_tasks: ansible_tasks/nfs-setup_client.yaml
+
+
+# - name: NFS fstab
+#   hosts: cluster:host
+#   become: true
+#   become_user: root
+#   tasks:
+#     - name: NFS fstab
+#       ansible.posix.mount:
+#         boot: true
+#         state: mounted
+#         fstype: nfs
+#         src: 10.0.15.70:/home/ec2-user/data/shared
+#         path: /home/ec2-user/data/shared
+#         opts: defaults,_netdev
       
 
-- name: Install RabbitMQ
-  hosts: client
-  become: true
-  become_user: root
-  tasks:
-    - name: Install RabbitMQ
-      include_tasks: ansible_tasks/rabbitMQ_server.yaml
+# - name: Install RabbitMQ
+#   hosts: client
+#   become: true
+#   become_user: root
+#   tasks:
+#     - name: Install RabbitMQ
+#       include_tasks: ansible_tasks/rabbitMQ_server.yaml
     
-  handlers:
-    - name: restart rabbitmq
-      service:
-        name: rabbitmq-server
-        state: restarted
+#   handlers:
+#     - name: restart rabbitmq
+#       service:
+#         name: rabbitmq-server
+#         state: restarted
+
+# - name: Install Celery
+#   hosts: client:cluster
+#   become: true
+#   become_user: root
+#   tasks:
+#     - name: Install Celery
+#       include_tasks: ansible_tasks/celery.yaml
+
+- name: Install Merizo
+  hosts: client:cluster
+  tasks:
+    - name: Install Merizo
+      include_tasks: ansible_tasks/merizo.yaml

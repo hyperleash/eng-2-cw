@@ -10,20 +10,32 @@
     line: "/home/ec2-user/data/shared {{ ansible_eth0.ipv4.address }}(rw,sync,no_all_squash,no_root_squash)"
     create: yes
 
-- name: Re-export NFS shares
-  become: true
-  delegate_to: localhost
-  command: exportfs -a
+# - name: Copy /etc/exports to client
+#   become: true
+#   copy:
+#     src: /etc/exports
+#     dest: /etc/exports
+#   delegate_to: client
 
-- name: Start and enable NFS server
-  become: true
-  delegate_to: localhost
-  service:
-    name: nfs-server
-    state: started
-    enabled: yes
+# - name: Re-export NFS shares
+#   become: true
+#   delegate_to: client
+#   command: exportfs -a
 
+# - name: Start and enable NFS server
+#   become: true
+#   delegate_to: client
+#   service:
+#     name: nfs-server
+#     state: started
+#     enabled: yes
 
+# - name: Start and enable NFS server
+#   become: true
+#   delegate_to: client
+#   service:
+#     name: nfs-server
+#     state: restarted
   # - name: Check if export line exists
   #   stat:
   #     path: /etc/exports

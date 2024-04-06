@@ -1,0 +1,22 @@
+- name: Copy /etc/exports to client
+  become: true
+  copy:
+    src: /etc/exports
+    dest: /etc/exports
+
+- name: Re-export NFS shares
+  become: true
+  command: exportfs -a
+
+- name: Start and enable NFS server
+  become: true
+  service:
+    name: nfs-server
+    state: started
+    enabled: yes
+
+# - name: Start and enable NFS server
+#   become: true
+#   service:
+#     name: nfs-server
+#     state: restarted

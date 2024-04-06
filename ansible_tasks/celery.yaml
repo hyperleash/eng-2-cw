@@ -1,0 +1,23 @@
+- name: Install pip and python
+  dnf:
+    name: 
+          - python3
+          - python3-pip
+          - git
+
+- name: Create virtual environment directory
+  ansible.builtin.file:
+    path: /home/ec2-user/data/celery_venv
+    state: directory
+    owner: ec2-user
+    group: ec2-user
+
+- name: Create a Python virtual environment
+  shell: python -m venv /home/ec2-user/data/celery_venv
+
+- name: Activate the virtual environment
+  shell: source /home/ec2-user/data/celery_venv/bin/activate
+
+- name: Install Celery
+  shell: /home/ec2-user/data/celery_venv/bin/pip install celery
+    

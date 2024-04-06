@@ -1,6 +1,6 @@
 - name: create a mount point for the data volume
   ansible.builtin.file:
-    path: data/nvme1n1
+    path: data/
     state: directory
     mode: '0755' 
 
