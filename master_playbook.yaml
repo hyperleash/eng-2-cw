@@ -80,8 +80,27 @@
 #     - name: Install Celery
 #       include_tasks: ansible_tasks/celery.yaml
 
-- name: Install Merizo
-  hosts: client:cluster
+- name: Install redis
+  hosts: client
+  become: true
+  become_user: root
   tasks:
-    - name: Install Merizo
-      include_tasks: ansible_tasks/merizo.yaml
+    - name: Install Redis
+      include_tasks: ansible_tasks/redis.yaml
+
+  handlers:
+    - name: restart redis
+      service:
+        name: redis_6379
+        state: restarted
+# - name: Install Merizo
+#   hosts: client:cluster
+#   tasks:
+#     - name: Install Merizo
+#       include_tasks: ansible_tasks/merizo.yaml
+
+# - name: Install PDB Tools
+#   hosts: client:cluster
+#   tasks:
+#     - name: Install PDB Tools
+#       include_tasks: ansible_tasks/pdb_tools.yaml

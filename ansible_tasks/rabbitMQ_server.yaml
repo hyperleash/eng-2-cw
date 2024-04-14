@@ -77,6 +77,13 @@
 - name: Create RabbitMQ admin user
   command: rabbitmqctl add_user admin abc123
   when: "'admin' not in rabbitmq_users.stdout" 
+
+- name: Create RabbitMQ celery user
+  command: rabbitmqctl add_user celery_worker celery
+  when: "'celery_worker' not in rabbitmq_users.stdout" 
+
+- name: set permissions for celery user
+  command: rabbitmqctl set_permissions -p / celery_worker ".*" ".*" ".*"
   
 - name: Set RabbitMQ admin user tags 
   command: rabbitmqctl set_user_tags admin administrator

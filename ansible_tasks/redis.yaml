@@ -1,0 +1,71 @@
+- name: Install redis
+  dnf:
+    name: 
+          - redis
+
+- name: check if redis service exists
+  ansible.builtin.stat:
+    path: /etc/systemd/system/redis_6379.service
+  register: redis_service
+
+- name: Create redis_6379.service
+  ansible.builtin.copy:
+    dest: redis_6379.service
+    content: |
+      [Unit]
+      Description=Redis In-Memory Data Store
+      After=network.target
+
+      [Service]
+      User=redis
+      Group=redis
+      Type=notify
+      ExecStart=/bin/redis-server /etc/redis/redis.conf
+      ExecStop=/bin/redis-cli shutdown
+      Restart=always
+
+      [Install]
+      WantedBy=multi-user.target
+  when: redis_service.stat.exists == False
+
+- name: move redis service
+  ansible.builtin.copy:
+      src:  redis_6379.service
+      dest: /etc/systemd/system/redis_6379.service
+      remote_src: yes
+      owner: root
+      group: root
+
+- name: Update Redis supervised setting
+  lineinfile:
+    path: /etc/redis/redis.conf  # Adjust if your path differs
+    regexp: '^# supervised auto'  # Matches the commented line
+    line: 'supervised systemd'
+    backrefs: yes  # Preserves existing indentation
+
+- name: Update Redis service configuration
+  lineinfile:
+    path: /etc/redis/redis.conf
+    regexp: '^bind 127.0.0.1 -::1'
+    line: 'bind 0.0.0.0'
+    backrefs: yes
+  notify: restart redis
+  
+- name: Reload systemd manager configuration
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Start redis service
+  ansible.builtin.systemd:
+    name: redis_6379
+    state: started
+
+- name: Enable redis service to start at boot
+  ansible.builtin.systemd:
+    name: redis_6379
+    enabled: yes 
+
+
+#/bin redis-server
+# /etc/redis/redis.conf
+

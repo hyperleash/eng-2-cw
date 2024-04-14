@@ -18,10 +18,10 @@
     owner: ec2-user
     group: ec2-user
 
-- name: Copy requirements.txt to remote machine
-  ansible.builtin.copy:
-    src: ./merizo_reqs.txt # Local path on control node
-    dest: /home/ec2-user/data/shared/merizo_reqs.txt
+# - name: Copy requirements.txt to remote machine
+#   ansible.builtin.copy:
+#     src: ./merizo_reqs.txt # Local path on control node
+#     dest: /home/ec2-user/data/shared/merizo_reqs.txt
 
 - name: Copy example file
   ansible.builtin.copy:
@@ -31,8 +31,16 @@
 - name: Activate the virtual environment
   shell: source /home/ec2-user/data/celery_venv/bin/activate
 
+- name: clone Merizo repo
+  ansible.builtin.git:
+    repo: https://github.com/psipred/Merizo.git
+    dest: /home/ec2-user/data/Merizo
+    update: yes
+
+
+
 - name: Install Merizo dependencies
-  shell: TMPDIR=/home/ec2-user/data/tmp /home/ec2-user/data/celery_venv/bin/pip install -r /home/ec2-user/data/shared/merizo_reqs.txt
+  shell: TMPDIR=/home/ec2-user/data/tmp /home/ec2-user/data/celery_venv/bin/pip install -r /home/ec2-user/data/Merizo/requirements.txt #/home/ec2-user/data/shared/merizo_reqs.txt
 
 # - name: Install dependencies from requirements.txt
 #   ansible.builtin.pip:

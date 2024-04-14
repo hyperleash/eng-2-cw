@@ -1,0 +1,8 @@
+- name: clone pdb-tools repo
+  ansible.builtin.git:
+    repo: https://github.com/harmslab/pdbtools.git
+    dest: /home/ec2-user/data/pdbtools
+    update: yes
+
+- name: Install pdbtools dependencies
+  shell: cd /home/ec2-user/data/pdbtools && TMPDIR=/home/ec2-user/data/tmp /home/ec2-user/data/celery_venv/bin/pip install -e .
