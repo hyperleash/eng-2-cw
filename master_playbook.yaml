@@ -72,27 +72,6 @@
 #         name: rabbitmq-server
 #         state: restarted
 
-# - name: Install Celery
-#   hosts: client:cluster
-#   become: true
-#   become_user: root
-#   tasks:
-#     - name: Install Celery
-#       include_tasks: ansible_tasks/celery.yaml
-
-- name: Install redis
-  hosts: client
-  become: true
-  become_user: root
-  tasks:
-    - name: Install Redis
-      include_tasks: ansible_tasks/redis.yaml
-
-  handlers:
-    - name: restart redis
-      service:
-        name: redis_6379
-        state: restarted
 # - name: Install Merizo
 #   hosts: client:cluster
 #   tasks:
@@ -104,3 +83,33 @@
 #   tasks:
 #     - name: Install PDB Tools
 #       include_tasks: ansible_tasks/pdb_tools.yaml
+
+- name: Install Celery
+  hosts: client:cluster
+  become: true
+  become_user: root
+  tasks:
+    - name: Install Celery
+      include_tasks: ansible_tasks/celery.yaml
+
+- name: Install Web App
+  hosts: client
+  become: true
+  become_user: root
+  tasks:
+    - name: Install Web App
+      include_tasks: ansible_tasks/web_app.yaml
+
+# - name: Install redis
+#   hosts: client
+#   become: true
+#   become_user: root
+#   tasks:
+#     - name: Install Redis
+#       include_tasks: ansible_tasks/redis.yaml
+
+#   handlers:
+#     - name: restart redis
+#       service:
+#         name: redis_6379
+#         state: restarted

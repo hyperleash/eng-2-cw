@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>PDB Processing Demo</title>
+    <style>
+        #loading-indicator {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>PDB File Upload</h1>
+    <h2>Please upload a .zip archive with .pdb files you wish to process</h2>
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="zipfile">
+        <button type="submit">Submit</button>
+    </form>
+
+    <div id="loading-indicator">
+        <h2>Processing File...</h2>
+    </div>
+
+    {% if error %}
+    <div class="error-message">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <script>
+        const form = document.querySelector('form');
+        const loadingIndicator = document.getElementById('loading-indicator');
+
+        form.addEventListener('submit', () => {
+            loadingIndicator.style.display = 'block';
+        });
+    </script>
+</body>
+
+</html>

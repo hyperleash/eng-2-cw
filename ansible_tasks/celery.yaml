@@ -5,8 +5,6 @@
           - python3-pip
           - git
 
-
-
 - name: Create virtual environment directory
   ansible.builtin.file:
     path: /home/ec2-user/data/celery_venv
@@ -23,4 +21,85 @@
 - name: Install Celery
   shell: /home/ec2-user/data/celery_venv/bin/pip install celery[redis]
 
+- name: remove celery service 
+  ansible.builtin.file:
+    path: /etc/systemd/system/celery.service
+    state: absent
 
+- name: check if redis service exists
+  ansible.builtin.stat:
+    path: /etc/systemd/system/celery.service
+  register: celery_service
+
+- name: Ensure directory exists
+  ansible.builtin.file:
+    path: /home/ec2-user/data/shared/celery_logs
+    state: directory
+    mode: '0755'
+    owner: ec2-user  
+    group: ec2-user
+
+- name: Create celery.service
+  ansible.builtin.copy:
+    dest: celery.service
+    content: |
+      [Unit]
+      Description=Celery Service
+      After=network.target
+
+      [Service]
+      User=ec2-user
+      Group=ec2-user
+      
+      Type=forking
+      
+      WorkingDirectory=/home/ec2-user/data/shared
+      ExecStart=/usr/local/bin/celery_env -A tasks worker -c 1  --pidfile=celery_logs/celery_service_{{ ansible_hostname }}.pid --logfile=celery_logs/celery_service_{{ ansible_hostname }}.log --loglevel="INFO" -D
+      ExecStop=/usr/local/bin/celery_env multi stop_verify worker --pidfile=celery_logs/celery_service_{{ ansible_hostname }}.pid --logfile=celery_logs/celery_service_{{ ansible_hostname }}.log --loglevel="INFO"
+      ExecReload=/usr/local/bin/celery_env -A tasks multi restart worker -c 1 --pidfile=celery_logs/celery_service_{{ ansible_hostname }}.pid --logfile=celery_logs/celery_service_{{ ansible_hostname }}.log --loglevel="INFO" -D
+      RemainAfterExit=yes
+
+      [Install]
+      WantedBy=multi-user.target
+  when: celery_service.stat.exists == False
+
+- name: move celery service
+  ansible.builtin.copy:
+      src:  celery.service
+      dest: /etc/systemd/system/celery.service
+      remote_src: yes
+      owner: root
+      group: root
+
+- name: move celery binary
+  ansible.builtin.copy:
+      src:  /home/ec2-user/data/celery_venv/bin/celery
+      dest: /usr/local/bin/celery_env
+      remote_src: yes
+      owner: ec2-user
+      group: ec2-user
+      mode: '0777'
+
+- name: Reload systemd manager configuration
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Start celery service
+  ansible.builtin.systemd:
+    name: celery
+    state: started
+
+- name: Enable redis service to start at boot
+  ansible.builtin.systemd:
+    name: celery
+    enabled: yes 
+
+- name: restart celery service
+  ansible.builtin.systemd:
+    name: celery
+    state: restarted
+
+# - name: Stop celery service
+#   ansible.builtin.systemd:
+#     name: celery
+#     state: stopped
