@@ -1,0 +1,63 @@
+- name: Install Flower
+  shell: /home/ec2-user/data/celery_venv/bin/pip install flower
+
+- name: remove flower service 
+  ansible.builtin.file:
+    path: /etc/systemd/system/flower.service
+    state: absent
+
+- name: check if flower service exists
+  ansible.builtin.stat:
+    path: /etc/systemd/system/celery_flower.service
+  register: celery_flower_service
+
+- name: Ensure directory exists
+  ansible.builtin.file:
+    path: /home/ec2-user/data/shared/celery_logs
+    state: directory
+    mode: '0755'
+    owner: ec2-user  
+    group: ec2-user
+
+- name: Create celery_flower.service
+  ansible.builtin.copy:
+    dest: celery_flower.service
+    content: |
+      [Unit]
+      Description=Celery Flower Service
+      After=network.target
+      Requires=celery.service 
+
+      [Service]
+      User=ec2-user
+      Group=ec2-user
+      Type=simple
+      WorkingDirectory=/home/ec2-user/data/shared
+      ExecStart=/usr/local/bin/celery_env flower -A tasks --port=5555 --pidfile=celery_logs/celery_flower_{{ ansible_hostname }}.pid --logfile=celery_logs/celery_flower_{{ ansible_hostname }}.log -D
+      
+
+      [Install]
+      WantedBy=multi-user.target
+  when: celery_flower_service.stat.exists == False 
+
+- name: move celery_flower service
+  ansible.builtin.copy:
+      src:  celery_flower.service
+      dest: /etc/systemd/system/celery_flower.service
+      remote_src: yes
+      owner: root
+      group: root
+
+- name: Reload systemd manager configuration
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Start celery_flower service
+  ansible.builtin.systemd:
+    name: celery_flower
+    state: started
+
+- name: Enable celery_flower service to start at boot
+  ansible.builtin.systemd:
+    name: celery_flower
+    enabled: yes 

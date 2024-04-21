@@ -92,13 +92,36 @@
     - name: Install Celery
       include_tasks: ansible_tasks/celery.yaml
 
-- name: Install Web App
-  hosts: client
-  become: true
-  become_user: root
-  tasks:
-    - name: Install Web App
-      include_tasks: ansible_tasks/web_app.yaml
+# - name: Install Flower
+#   hosts: client
+#   become: true
+#   become_user: root
+#   tasks:
+#     - name: Install Flower
+#       include_tasks: ansible_tasks/flower.yaml
+
+# - name: set up Prometheus node exporter
+#   hosts: cluster:client
+#   become: true
+#   become_user: root
+#   tasks:
+#     - name: set up Prometheus node exporter
+#       include_tasks: ansible_tasks/prometheus_exporter.yaml
+
+# - name: set up Prometheus on host
+#   hosts: localhost
+#   become: true
+#   become_user: root
+#   tasks:
+#     - name: set up Prometheus on host
+#       include_tasks: ansible_tasks/prometheus_host.yaml
+# - name: Install Web App
+#   hosts: client
+#   become: true
+#   become_user: root
+#   tasks:
+#     - name: Install Web App
+#       include_tasks: ansible_tasks/web_app.yaml
 
 # - name: Install redis
 #   hosts: client

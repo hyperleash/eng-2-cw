@@ -21,12 +21,15 @@
 - name: Install Celery
   shell: /home/ec2-user/data/celery_venv/bin/pip install celery[redis]
 
+- name: Disable SELinux temporarily (otherwise can't start celery service)
+  shell: setenforce 0
+
 - name: remove celery service 
   ansible.builtin.file:
     path: /etc/systemd/system/celery.service
     state: absent
 
-- name: check if redis service exists
+- name: check if celery service exists
   ansible.builtin.stat:
     path: /etc/systemd/system/celery.service
   register: celery_service
@@ -39,7 +42,7 @@
     owner: ec2-user  
     group: ec2-user
 
-- name: Create celery.service
+- name: Create celery.service (standard worker)
   ansible.builtin.copy:
     dest: celery.service
     content: |
@@ -54,14 +57,42 @@
       Type=forking
       
       WorkingDirectory=/home/ec2-user/data/shared
-      ExecStart=/usr/local/bin/celery_env -A tasks worker -c 1  --pidfile=celery_logs/celery_service_{{ ansible_hostname }}.pid --logfile=celery_logs/celery_service_{{ ansible_hostname }}.log --loglevel="INFO" -D
+      ExecStart=/usr/local/bin/celery_env -A tasks worker -Q pdb_queue,celery -c 1 --pidfile=celery_logs/celery_service_{{ ansible_hostname }}.pid --logfile=celery_logs/celery_service_{{ ansible_hostname }}.log --loglevel="INFO" --prefetch-multiplier=1 -D
       ExecStop=/usr/local/bin/celery_env multi stop_verify worker --pidfile=celery_logs/celery_service_{{ ansible_hostname }}.pid --logfile=celery_logs/celery_service_{{ ansible_hostname }}.log --loglevel="INFO"
-      ExecReload=/usr/local/bin/celery_env -A tasks multi restart worker -c 1 --pidfile=celery_logs/celery_service_{{ ansible_hostname }}.pid --logfile=celery_logs/celery_service_{{ ansible_hostname }}.log --loglevel="INFO" -D
+      ExecReload=/usr/local/bin/celery_env -A tasks multi restart worker -Q pdb_queue,celery -c 1 --pidfile=celery_logs/celery_service_{{ ansible_hostname }}.pid --logfile=celery_logs/celery_service_{{ ansible_hostname }}.log --loglevel="INFO" --prefetch-multiplier=1 -D
       RemainAfterExit=yes
 
       [Install]
       WantedBy=multi-user.target
-  when: celery_service.stat.exists == False
+  when: 
+    - celery_service.stat.exists == False
+    - "'cluster' in group_names"
+  
+- name: Create celery.service (high resource worker)
+  ansible.builtin.copy:
+    dest: celery.service
+    content: |
+      [Unit]
+      Description=Celery Service
+      After=network.target
+
+      [Service]
+      User=ec2-user
+      Group=ec2-user
+      
+      Type=forking
+      
+      WorkingDirectory=/home/ec2-user/data/shared
+      ExecStart=/usr/local/bin/celery_env -A tasks worker -Q merizo_queue,celery -c 1 --pidfile=celery_logs/celery_service_{{ ansible_hostname }}.pid --logfile=celery_logs/celery_service_{{ ansible_hostname }}.log --loglevel="INFO" --prefetch-multiplier=1 -D
+      ExecStop=/usr/local/bin/celery_env multi stop_verify worker --pidfile=celery_logs/celery_service_{{ ansible_hostname }}.pid --logfile=celery_logs/celery_service_{{ ansible_hostname }}.log --loglevel="INFO"
+      ExecReload=/usr/local/bin/celery_env -A tasks multi restart worker -Q merizo_queue,celery -c 1 --pidfile=celery_logs/celery_service_{{ ansible_hostname }}.pid --logfile=celery_logs/celery_service_{{ ansible_hostname }}.log --loglevel="INFO" --prefetch-multiplier=1 -D
+      RemainAfterExit=yes
+
+      [Install]
+      WantedBy=multi-user.target
+  when: 
+    - celery_service.stat.exists == False
+    - "'client' in group_names"
 
 - name: move celery service
   ansible.builtin.copy:
@@ -89,7 +120,7 @@
     name: celery
     state: started
 
-- name: Enable redis service to start at boot
+- name: Enable celery service to start at boot
   ansible.builtin.systemd:
     name: celery
     enabled: yes 
