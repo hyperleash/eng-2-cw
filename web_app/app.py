@@ -86,4 +86,4 @@ def get_task_status(job_hash):
         return render_template('error.html', error_message='Hash not found') 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True) 

@@ -38,25 +38,9 @@
     remote_src: yes
     owner: root
     group: root
-# - name: Install firewalld
-#       ansible.builtin.package:
-#         name: firewalld
-#         state: present
 
-#     - name: Start and enable firewalld service
-#       ansible.builtin.systemd:
-#         name: firewalld
-#         state: started
-#         enabled: yes
 - name: start node-exporter
   ansible.builtin.service:
     name: node_exporter
     state: started
     daemon_reload: true
-# - name: open port 9100
-#   ansible.posix.firewalld:
-#     port: 9100/tcp
-#     permanent: true
-#     state: enabled
-#     zone: public
-#     immediate: true

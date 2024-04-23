@@ -144,41 +144,7 @@ def clean_up(results, directory_path):
 
     shutil.rmtree(directory_path)  # Clean up the resutls directory
 
-@app.task()
-def run_pipeline_old(directory_path):
-    print("Running Pipeline")
-    # Unzip the data archive
-    unzipped_folder_name = ""
-    with zipfile.ZipFile(os.path.join(directory_path, 'data.zip'), 'r') as zip_ref:
-        for info in zip_ref.infolist():
-            if info.is_dir():  # Find the top-level directory
-                unzipped_folder_name = info.filename
-                break 
-    
-        zip_ref.extractall(directory_path)
 
-    os.remove(os.path.join(directory_path, 'data.zip')) # Remove original archive
-
-    directory_path = os.path.join(directory_path, unzipped_folder_name) # Update directory path to the unzipped folder
-
-    pdb_files = [os.path.join(directory_path, file) for file in os.listdir(directory_path) if file.endswith('.pdb')]
-
-    merizo_job = group(run_merizo.s(file_path) for file_path in pdb_files)
-    merizo_results = merizo_job.apply_async(routing_key = "merizo_queue")
-    paths = merizo_results.get()
-
-    domain_file_paths = [path for result in paths for path in result] 
-
-    centermass_tasks = group(run_pdb_centremass.s(path) for path in domain_file_paths)
-    watercontact_tasks = group(run_pdb_watercontact.s(path) for path in domain_file_paths)
-
-    pdb_job = group(centermass_tasks, watercontact_tasks)
-    pdb_results = pdb_job.apply_async(routing_key = "pdb_queue")
-    pdb_results.get()
-
-    shutil.make_archive(directory_path, 'zip', directory_path)  # Zip the output directory
-
-    #shutil.rmtree(directory_path)  # Clean up the resutls directory
 
 
 

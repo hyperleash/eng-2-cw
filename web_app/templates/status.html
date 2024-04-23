@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Upload Success</title>
+</head>
+
+<body>
+    <h1>{{job_hash}}</h1>
+    <p>Status: {{ job_status }}</p>
+    <p>Please save this hash to check the status of your job.</p>
+
+    {% if download_ready %}
+    <a href="{{ url_for('download_results', job_hash=job_hash) }}" class="btn btn-primary">Download Results</a>
+    {% endif %}
+</body>
+
+</html>

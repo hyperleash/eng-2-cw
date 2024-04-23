@@ -28,12 +28,30 @@
     </div>
     {% endif %}
 
+    <h2>Check Task Status</h2>
+    <input type="text" id="hash-input" placeholder="Enter Hash">
+    <button type="button" id="status-check-button">Check Status</button>
+    <div id="status-message"></div>
+
     <script>
         const form = document.querySelector('form');
         const loadingIndicator = document.getElementById('loading-indicator');
 
         form.addEventListener('submit', () => {
             loadingIndicator.style.display = 'block';
+        });
+
+        const statusCheckButton = document.getElementById('status-check-button');
+        const hashInput = document.getElementById('hash-input');
+        const statusMessage = document.getElementById('status-message');
+
+        statusCheckButton.addEventListener('click', () => {
+            const hash = hashInput.value;
+            if (hash) {
+                window.location.href = `http://127.0.0.1:5001//task-status/${hash}`;
+            } else {
+                statusMessage.textContent = 'Please enter a hash.';
+            }
         });
     </script>
 </body>
