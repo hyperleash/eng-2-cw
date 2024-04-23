@@ -8,20 +8,24 @@
 - name: Create virtual environment directory
   ansible.builtin.file:
     path: /home/ec2-user/data/celery_venv
+    state: absent
+
+- name: Create virtual environment directory
+  ansible.builtin.file:
+    path: /home/ec2-user/data/celery_venv
     state: directory
     owner: ec2-user
     group: ec2-user
 
 - name: Create a Python virtual environment
+  become: true
+  become_user: ec2-user
   shell: python -m venv /home/ec2-user/data/celery_venv
-
-- name: Activate the virtual environment
-  shell: source /home/ec2-user/data/celery_venv/bin/activate
 
 - name: Install Celery
   shell: /home/ec2-user/data/celery_venv/bin/pip install celery[redis]
 
-- name: Disable SELinux temporarily (otherwise can't start celery service)
+- name: Disable SELinux (otherwise can't start celery service)
   shell: setenforce 0
 
 - name: remove celery service 
@@ -110,6 +114,13 @@
       owner: ec2-user
       group: ec2-user
       mode: '0777'
+
+- name: copy celery tasks over to the shared directory from ansible host
+  ansible.builtin.copy:
+    src: /home/ec2-user/eng-2-cw/celery_tasks/tasks.py
+    dest: /home/ec2-user/data/shared/tasks.py
+    owner: ec2-user
+    group: ec2-user
 
 - name: Reload systemd manager configuration
   ansible.builtin.systemd:

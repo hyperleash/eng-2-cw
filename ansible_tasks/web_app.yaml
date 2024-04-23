@@ -3,7 +3,7 @@
 
 - name: copy web_app directory from ansible host to client
   ansible.builtin.copy:
-    src: /home/ec2-user/coursework/web_app
+    src: /home/ec2-user/eng-2-cw/web_app
     dest: /home/ec2-user/data/
     owner: ec2-user
     group: ec2-user

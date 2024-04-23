@@ -1,88 +1,66 @@
-# - name: generate a key
-#   hosts: host
-#   tasks:
-#     - name: generate a key
-#       include_tasks: ansible_tasks/generate_keys.yaml
-  
-# - name: distribute keys
-#   hosts: cluster:client
-#   tasks:
-#     - name: distribute keys
-#       include_tasks: ansible_tasks/distribute_keys.yaml
+- name: prepare disk
+  hosts: cluster:client
+  tasks:
+    - name: mount disk
+      include_tasks: ansible_tasks/mount_disk.yaml
 
-# - name: prepare disk
-#   hosts: cluster:client
-#   tasks:
-#     - name: mount disk
-#       include_tasks: ansible_tasks/mount_disk.yaml
+- name: Install EPEL
+  hosts: cluster:client:host
+  become: true
+  become_user: root
+  tasks:
+    - name: Install EPEL
+      include_tasks: ansible_tasks/install_epel.yaml
 
-# - name: Install EPEL
-#   hosts: cluster:client:host
-#   become: true
-#   become_user: root
-#   tasks:
-#     - name: distributr keys
-#       include_tasks: ansible_tasks/install_epel.yaml
+- name: Create /etc/exports on Ansible Host
+  hosts: cluster:host 
+  tasks:
+    - name: Create /etc/exports on Ansible Host
+      include_tasks: ansible_tasks/nfs-setup_host.yaml
 
-# - name: Gather and Use Cluster IPs
-#   hosts: cluster:host 
-#   tasks:
-#     - name: Create /etc/exports on Ansible Host
-#       include_tasks: ansible_tasks/nfs-setup_host.yaml
+- name: Install and prepare NFS on all nodes
+  hosts: cluster:client:host  
+  tasks:
+    - name: Install and prepare NFS on all nodes
+      include_tasks: ansible_tasks/nfs-packages.yaml
 
-# - name: Install and prepare NFS
-#   hosts: cluster:client:host  
-#   tasks:
-#     - name: Install and prepare NFS
-#       include_tasks: ansible_tasks/nfs-packages.yaml
-
-# - name: Gather and Use Cluster IPs
-#   hosts: client
-#   tasks:
-#     - name: Start and enable NFS server
-#       include_tasks: ansible_tasks/nfs-setup_client.yaml
+- name: Prepare NFS server on the client
+  hosts: client
+  tasks:
+    - name: Prepare NFS server on the client
+      include_tasks: ansible_tasks/nfs-setup_client.yaml
 
 
-# - name: NFS fstab
-#   hosts: cluster:host
-#   become: true
-#   become_user: root
-#   tasks:
-#     - name: NFS fstab
-#       ansible.posix.mount:
-#         boot: true
-#         state: mounted
-#         fstype: nfs
-#         src: 10.0.15.70:/home/ec2-user/data/shared
-#         path: /home/ec2-user/data/shared
-#         opts: defaults,_netdev
-      
+- name: NFS fstab
+  hosts: cluster:host
+  become: true
+  become_user: root
+  tasks:
+    - name: NFS fstab
+      ansible.posix.mount:
+        boot: true
+        state: mounted
+        fstype: nfs
+        src: "{{ client_ip }}:/home/ec2-user/data/shared"
+        path: /home/ec2-user/data/shared
+        opts: defaults,_netdev
+      vars:
+        client_ip: "10.0.11.137" #unfortunately couldn't figure out how to supply this dynamically
 
-# - name: Install RabbitMQ
-#   hosts: client
-#   become: true
-#   become_user: root
-#   tasks:
-#     - name: Install RabbitMQ
-#       include_tasks: ansible_tasks/rabbitMQ_server.yaml
+
+- name: Install RabbitMQ
+  hosts: client
+  become: true
+  become_user: root
+  tasks:
+    - name: Install RabbitMQ
+      include_tasks: ansible_tasks/rabbitMQ_server.yaml
     
-#   handlers:
-#     - name: restart rabbitmq
-#       service:
-#         name: rabbitmq-server
-#         state: restarted
-
-# - name: Install Merizo
-#   hosts: client:cluster
-#   tasks:
-#     - name: Install Merizo
-#       include_tasks: ansible_tasks/merizo.yaml
-
-# - name: Install PDB Tools
-#   hosts: client:cluster
-#   tasks:
-#     - name: Install PDB Tools
-#       include_tasks: ansible_tasks/pdb_tools.yaml
+  handlers:
+    - name: restart rabbitmq
+      service:
+        name: rabbitmq-server
+        state: restarted
 
 - name: Install Celery
   hosts: client:cluster
@@ -92,47 +70,60 @@
     - name: Install Celery
       include_tasks: ansible_tasks/celery.yaml
 
-# - name: Install Flower
-#   hosts: client
-#   become: true
-#   become_user: root
-#   tasks:
-#     - name: Install Flower
-#       include_tasks: ansible_tasks/flower.yaml
+- name: Install Merizo
+  hosts: client:cluster
+  tasks:
+    - name: Install Merizo
+      include_tasks: ansible_tasks/merizo.yaml
 
-# - name: set up Prometheus node exporter
-#   hosts: cluster:client
-#   become: true
-#   become_user: root
-#   tasks:
-#     - name: set up Prometheus node exporter
-#       include_tasks: ansible_tasks/prometheus_exporter.yaml
+- name: Install PDB Tools
+  hosts: client:cluster
+  tasks:
+    - name: Install PDB Tools
+      include_tasks: ansible_tasks/pdb_tools.yaml
 
-# - name: set up Prometheus on host
-#   hosts: localhost
-#   become: true
-#   become_user: root
-#   tasks:
-#     - name: set up Prometheus on host
-#       include_tasks: ansible_tasks/prometheus_host.yaml
-# - name: Install Web App
-#   hosts: client
-#   become: true
-#   become_user: root
-#   tasks:
-#     - name: Install Web App
-#       include_tasks: ansible_tasks/web_app.yaml
+- name: Install redis
+  hosts: client
+  become: true
+  become_user: root
+  tasks:
+    - name: Install Redis
+      include_tasks: ansible_tasks/redis.yaml
 
-# - name: Install redis
-#   hosts: client
-#   become: true
-#   become_user: root
-#   tasks:
-#     - name: Install Redis
-#       include_tasks: ansible_tasks/redis.yaml
+  handlers:
+    - name: restart redis
+      service:
+        name: redis_6379
+        state: restarted
 
-#   handlers:
-#     - name: restart redis
-#       service:
-#         name: redis_6379
-#         state: restarted
+- name: Install Flower
+  hosts: client
+  become: true
+  become_user: root
+  tasks:
+    - name: Install Flower
+      include_tasks: ansible_tasks/flower.yaml
+
+- name: set up Prometheus node exporter
+  hosts: cluster:client
+  become: true
+  become_user: root
+  tasks:
+    - name: set up Prometheus node exporter
+      include_tasks: ansible_tasks/prometheus_exporter.yaml
+
+- name: set up Prometheus on host
+  hosts: localhost
+  become: true
+  become_user: root
+  tasks:
+    - name: set up Prometheus on host
+      include_tasks: ansible_tasks/prometheus_host.yaml
+
+- name: Copy the web app code to the client
+  hosts: client
+  become: true
+  become_user: root
+  tasks:
+    - name: Install Web App
+      include_tasks: ansible_tasks/web_app.yaml

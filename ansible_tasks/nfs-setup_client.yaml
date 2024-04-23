@@ -15,8 +15,7 @@
     state: started
     enabled: yes
 
-# - name: Start and enable NFS server
-#   become: true
-#   service:
-#     name: nfs-server
-#     state: restarted
+- name: Reload systemd manager configuration
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: yes

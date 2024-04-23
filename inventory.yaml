@@ -1,32 +1,33 @@
 cluster:
   hosts:
-    18.171.158.236:
-    35.178.169.219:
-    35.178.129.151:
-    18.130.186.34:
+    3.9.169.13:
+    35.177.237.137:
+    35.178.131.180:
+    18.134.240.184:
   vars:
     ansible_ssh_private_key_file: ~/.ssh/ansible_identity
 
 host:
   hosts:
-    13.40.99.98:
+    18.130.101.0:
   vars:
     ansible_ssh_private_key_file: ~/.ssh/ansible_identity
 
 client:
   hosts:
-    13.43.218.245:
+    3.9.175.144:
   vars:
     ansible_ssh_private_key_file: ~/.ssh/ansible_identity
+    client_intenal_ip: 10.0.11.137 #Doesn't work. Actually needs to be set in NFS fstab task, unfortunatelly couldn't figure out how to supply it dinamically thorugh inventory.
 
 coursemachines:
   hosts:
-    3.10.56.53:
-    35.178.129.151:
-    18.130.186.34:
-    13.40.99.98:
-    13.43.218.245:
-    18.171.158.236:
+    3.9.169.13:
+    35.177.237.137:
+    35.178.131.180:
+    18.134.240.184:
+    3.9.175.144:
+    18.130.101.0:
   vars:
     ansible_ssh_private_key_file: ~/.ssh/ansible_identity
 

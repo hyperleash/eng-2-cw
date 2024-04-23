@@ -15,7 +15,7 @@ app = Flask(__name__)
 
 app.config['UPLOAD_FOLDER'] = '/home/ec2-user/data/shared/submissions'  # Set upload destination
 
-redis_client = redis.Redis(host='10.0.15.70', port=6379) 
+redis_client = redis.Redis(host='10.0.11.137', port=6379) 
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -27,21 +27,16 @@ def index():
                 print("Non-archive uppload: ignoring")
                 return render_template('index.html', error="Please only upload .zip files.")
 
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], 'data.zip'))
+            job_hash = str(uuid.uuid4()) # Generate unique hash
+            upload_path = os.path.join(app.config['UPLOAD_FOLDER'], job_hash)
+            os.makedirs(upload_path, exist_ok=True)
 
-            num_jobs = 2000
+            file.save(os.path.join(upload_path, 'data.zip'))
+            
+            result = run_pipeline.delay(upload_path)
 
-            for _ in range(num_jobs):
-                job_hash = str(uuid.uuid4()) # Generate unique hash
-                upload_path = os.path.join(app.config['UPLOAD_FOLDER'], job_hash)
-                os.makedirs(upload_path, exist_ok=True)
-
-                #file.save(os.path.join(upload_path, 'data.zip'))
-                shutil.copyfile(os.path.join(app.config['UPLOAD_FOLDER'], 'data.zip'), os.path.join(upload_path, 'data.zip'))
-                result = run_pipeline.delay(upload_path)
-
-                task_id = result.id
-                redis_client.set(job_hash, task_id)
+            task_id = result.id
+            redis_client.set(job_hash, task_id)
 
             return redirect(url_for('upload_success', job_hash=job_hash))
     else:
@@ -73,7 +68,7 @@ def get_task_status(job_hash):
         
         if all(status == 'SUCCESS' for status in child_task_statuses): #if all succeed
             overall_status = 'READY'
-        elif any(status == 'FAILURE' for status in child_task_statuses): # if any fail
+        elif any(status == 'FAILURE' for status in child_task_statuses): #if any fail
             overall_status = 'FAILED'
         else:
             overall_status = 'IN PROGRESS'

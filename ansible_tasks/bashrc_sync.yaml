@@ -1,8 +1,0 @@
-- name: sync bashrc
-  hosts: cluster:client
-  tasks:
-  - name: bashrc
-    ansible.builtin.copy:
-      src: ~/.bashrc
-      dest: ~/.bashrc
-      mode: 0700

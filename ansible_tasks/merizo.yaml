@@ -14,14 +14,6 @@
     owner: ec2-user
     group: ec2-user
 
-- name: Copy example file
-  ansible.builtin.copy:
-    src: ./AF-A0A0A0MRZ7-F1-model_v4.pdb # Local path on control node
-    dest: /home/ec2-user/data/shared/AF-A0A0A0MRZ7-F1-model_v4.pdb
-
-- name: Activate the virtual environment
-  shell: source /home/ec2-user/data/celery_venv/bin/activate
-
 - name: clone Merizo repo
   ansible.builtin.git:
     repo: https://github.com/psipred/Merizo.git
@@ -29,5 +21,5 @@
     update: yes
 
 - name: Install Merizo dependencies
-  shell: TMPDIR=/home/ec2-user/data/tmp /home/ec2-user/data/celery_venv/bin/pip install -r /home/ec2-user/data/Merizo/requirements.txt #/home/ec2-user/data/shared/merizo_reqs.txt
+  shell: TMPDIR=/home/ec2-user/data/tmp /home/ec2-user/data/celery_venv/bin/pip install -r /home/ec2-user/data/Merizo/requirements.txt 
 

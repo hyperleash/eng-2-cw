@@ -4,12 +4,14 @@
   ansible.builtin.dnf:
     name: "*"
     state: latest
+
 - name: NFS tools
   become: true
   become_user: root
   ansible.builtin.dnf:
     name: "nfs-utils"
     state: latest
+
 - name: NFS mountpoint
   become: true
   become_user: root
@@ -17,6 +19,7 @@
     path: /home/ec2-user/data/shared
     state: directory
     recurse: yes
+    
 - name: Change ownership of directories to ec2-user
   become: true
   become_user: root

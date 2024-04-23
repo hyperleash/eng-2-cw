@@ -1,0 +1,11 @@
+- name: generate a key
+  hosts: host
+  tasks:
+    - name: generate a key
+      include_tasks: ansible_tasks/generate_keys.yaml
+  
+- name: distribute keys
+  hosts: cluster:client
+  tasks:
+    - name: distribute keys
+      include_tasks: ansible_tasks/distribute_keys.yaml

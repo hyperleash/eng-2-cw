@@ -6,7 +6,7 @@ import os
 import subprocess
 import zipfile
 
-app = Celery('tasks', broker='amqp://celery_worker:celery@10.0.15.70:5673//', backend='redis://10.0.15.70:6379')
+app = Celery('tasks', broker='amqp://celery_worker:celery@10.0.11.137:5673//', backend='redis://10.0.11.137:6379')
 app.conf.task_prefetch_count = 1
 
 @app.task
