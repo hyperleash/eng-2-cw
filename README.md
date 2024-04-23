@@ -35,30 +35,50 @@ sudo pip3 install ansible
 ## Step 4: Clone the coursework github repository
 To clone the repository and put all of the required code on the control node run this command:
 ```bash
-git clone git@github.com:hyperleash/eng-2-cw.git
+git clone https://github.com/hyperleash/eng-2-cw.git
 ```
 
-## Step 4.5: (Optional) Create and distribute a new key pair
-To improve security you can run the key_exchange.yml playbook to create and distribute a new key pair.
+## Step 5: Add the lecturer key to your ssh-agent
+```bash
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/comp0239_key
+
+```
+## Step 6: Create and distribute a new key pair (modify the inventory file with the according IPs)
 
 ```bash
-cd cw0235
-ansible-playbook --private-key=~/.ssh/lecturer_key -i hosts key_exchange.yml
+cd eng-2-cw
+ansible-playbook distribute_keys.yaml -i inventory.yaml -e 'ansible_ssh_private_key_file=~/.ssh/comp0239_key'
 ```
 
-## Step 5: Run the pipeline
-Before running the pipeline, put the ids you want to analyse to the experiment_ids.txt file
-
-You can run the distributed analysis using this command:
+## STEP 7: Add the correct internal client IP where required (if a new cluster was created)
+- In the NFS fstab task in master_playbook.yaml
+- In eng-2-cw/celery_tasks/tasks.py in Celery app creation (line 9)
+- In eng-2-cw/web_app/app.py for Redis backend IP
+  
+## Step 8: Run the master playbook to configure the cluster
 ```bash
-cd cw0235
-ansible-playbook --private-key=~/.ssh/lecturer_key -i hosts distribute_pipeline.yml
+cd eng-2-cw
+ansible-playbook master_playbook.yaml -i inventory.yaml
 ```
 
-If you did step 4.5 replace the private key with ~/.ssh/ansible_identity
+# Running the web app
 
-## Step 6: Get results
-Once the pipeline finishes, results will be stored in these files in cw0235 directory:
+The easiest way to do this seems to be through VSCode
+## Step 1: Add the following ssh config
+```bash
+Host CLIENT
+   HostName 3.9.175.144
+   User ec2-user
+   IdentityFile ~/.ssh/comp0239_key
+```
+## Step 2: Connect to CLIENT through VSCode and start the flask app:
+```bash
+source /home/ec2-user/data/celery_venv/bin/activate
+cd /home/ec2-user/data/web_app/
+flask run
+```
 
-- best_hits.csv
-- stats.csv
+## Step 3: VSCode should offer to open the page in the browser
+
+## Step 4: Use small_test.zip and big_test.zip example input archives to test the app
